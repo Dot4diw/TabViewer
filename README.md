@@ -26,7 +26,7 @@ A VS Code extension that provides a file explorer with a three-column layout dis
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/tabviewer.git
+git clone https://github.com/Dot4diw/TabViewer.git
 cd tabviewer
 npm install
 npm run compile
