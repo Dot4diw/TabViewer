@@ -386,7 +386,7 @@ class TabViewerViewProvider {
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
     <div class="header-container">
         <div class="breadcrumb" id="breadcrumbContent">${this._getBreadcrumbContent()}</div>
         <div class="search-container">

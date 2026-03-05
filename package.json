@@ -3,6 +3,11 @@
   "displayName": "TabViewer",
   "description": "A file explorer with three columns: Name, Modified, Size",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tabviewer.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
