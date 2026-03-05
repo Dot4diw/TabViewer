@@ -77,10 +77,16 @@ class TabViewerViewProvider {
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
         webviewView.webview.onDidReceiveMessage(async (message) => {
             switch (message.command) {
+                case 'previewFile':
+                    if (message.path) {
+                        const uri = vscode.Uri.file(message.path);
+                        vscode.commands.executeCommand('vscode.open', uri, { preview: true });
+                    }
+                    break;
                 case 'openFile':
                     if (message.path) {
                         const uri = vscode.Uri.file(message.path);
-                        vscode.commands.executeCommand('vscode.open', uri);
+                        vscode.commands.executeCommand('vscode.open', uri, { preview: false });
                     }
                     break;
                 case 'navigateTo':
@@ -416,6 +422,14 @@ class TabViewerViewProvider {
         const vscode = acquireVsCodeApi();
         const searchInput = document.getElementById('searchInput');
         let lastSearchValue = '${this._escapeHtml(this._searchQuery)}';
+        let clickTimeout = null;
+        
+        function previewFile(path) {
+            vscode.postMessage({
+                command: 'previewFile',
+                path: path
+            });
+        }
         
         function openFile(path) {
             vscode.postMessage({
@@ -429,6 +443,29 @@ class TabViewerViewProvider {
                 command: 'navigateTo',
                 path: path
             });
+        }
+        
+        function handleFileClick(path, event) {
+            if (event.detail === 1) {
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout);
+                }
+                clickTimeout = setTimeout(() => {
+                    previewFile(path);
+                }, 200);
+            } else if (event.detail === 2) {
+                if (clickTimeout) {
+                    clearTimeout(clickTimeout);
+                    clickTimeout = null;
+                }
+                openFile(path);
+            }
+        }
+        
+        function handleFolderClick(path, event) {
+            if (event.detail === 2) {
+                navigateTo(path);
+            }
         }
         
         function sort(field) {
@@ -540,8 +577,8 @@ class TabViewerViewProvider {
         return files.map(file => {
             const iconClass = file.isDirectory ? 'folder-icon' : 'file-icon';
             const clickHandler = file.isDirectory
-                ? `onclick="navigateTo('${this._escapeHtml(file.path)}')"`
-                : `onclick="openFile('${this._escapeHtml(file.path)}')"`;
+                ? `onclick="handleFolderClick('${this._escapeHtml(file.path)}', event)" ondblclick="handleFolderClick('${this._escapeHtml(file.path)}', event)"`
+                : `onclick="handleFileClick('${this._escapeHtml(file.path)}', event)" ondblclick="handleFileClick('${this._escapeHtml(file.path)}', event)"`;
             return `<tr class="file-row" ${clickHandler}>
                 <td class="${iconClass}">${this._escapeHtml(file.name)}</td>
                 <td class="modified">${file.modified}</td>
